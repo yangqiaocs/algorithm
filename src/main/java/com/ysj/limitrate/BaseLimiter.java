@@ -1,9 +1,7 @@
 package com.ysj.limitrate;
 
-import sun.jvm.hotspot.debugger.win32.coff.TestDebugInfo;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
@@ -11,9 +9,9 @@ import java.util.concurrent.TimeUnit;
 
 public class BaseLimiter implements Limiter{
     //资源池
-    static Semaphore semaphore;
+    volatile Semaphore semaphore;
     //请求队列
-    List<Long> requestQueue = new ArrayList<Long>();
+    volatile Queue<Long> requestQueue = new LinkedList<Long>();
     //流量速率
     int rate;
     //阻塞队列上限
@@ -26,7 +24,7 @@ public class BaseLimiter implements Limiter{
     BaseLimiter(int rate,TimeUnit timeUnit){
         this.rate = rate;
         this.timeUnit = timeUnit;
-        semaphore = new Semaphore(this.rate);
+        this.semaphore = new Semaphore(this.rate);
     }
 
     //带有阻塞队列的限流器
@@ -34,8 +32,7 @@ public class BaseLimiter implements Limiter{
         this.rate = rate;
         this.timeUnit = timeUnit;
         this.blockQueueSize = blockQueueSize;
-        this.requestQueue = new ArrayList<Long>();
-        semaphore = new Semaphore(this.rate);
+        this.semaphore = new Semaphore(this.rate);
     }
 
     @Override
@@ -46,8 +43,30 @@ public class BaseLimiter implements Limiter{
     public void consume() {
     }
 
+    @Override
+    public void requestGen(){
+        //每毫秒产生一个请求
+        ScheduledExecutorService requestGenService = Executors.newScheduledThreadPool(1);
+        requestGenService.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                sequence++;
+                try {
+                    if(requestQueue.size()<blockQueueSize){
+                        requestQueue.offer(sequence);
+                    }
+                    System.out.println(sequence+"enter queue, "
+                            + "rest"+ requestQueue.size()+" request");
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        },1L,1L, TimeUnit.MILLISECONDS);
+    }
+
     public void testLimiter(){
-        this.produce();
-        this.consume();
+        requestGen();
+        produce();
+        consume();
     }
 }
