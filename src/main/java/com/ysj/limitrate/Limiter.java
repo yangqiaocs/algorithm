@@ -7,6 +7,8 @@ public interface Limiter {
      void requestGen();
      void testLimiter();
      void printConsumeInfo(Long requestSequence);
+     void addRequest(Long requestNum);
+     void addResource(int resourceNum);
 
 }
  

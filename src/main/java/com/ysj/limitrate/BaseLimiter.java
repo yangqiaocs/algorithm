@@ -9,13 +9,14 @@ import java.util.concurrent.TimeUnit;
 
 public class BaseLimiter implements Limiter {
 	//定时服务
-	ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
+	ScheduledExecutorService service = Executors.newScheduledThreadPool(4);
 	//资源池
 	volatile Semaphore semaphore;
 	//请求队列
 	volatile Queue<Long> requestQueue = new LinkedList<>();
+	//生产速率，每秒的资源数/美妙处理的请求数
 	int produceRate;
-	//流量速率
+	//流量速率，每秒请求数
 	int consumeRate;
 	//阻塞队列上限
 	Long blockQueueSize;
@@ -48,7 +49,7 @@ public class BaseLimiter implements Limiter {
 					e.printStackTrace();
 				}
 			}
-		}, 50L, 50L, TimeUnit.MILLISECONDS);
+		}, 1000L/consumeRate, 1000L/consumeRate, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -68,25 +69,12 @@ public class BaseLimiter implements Limiter {
 
 	@Override
 	public void consume() {
-		service.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					if (requestQueue.size() > 0) {
-						myConsume();
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}, 1L, 1L, TimeUnit.MICROSECONDS);
 	}
 
 	@Override
 	public void myConsume() {
 
 	}
-
 
 	public void testLimiter() {
 		produce();
