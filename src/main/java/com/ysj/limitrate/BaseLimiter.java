@@ -32,7 +32,7 @@ public class BaseLimiter implements Limiter {
 
 	@Override
 	public void requestGen() {
-		//1s产生100个产生一个请求,直接加入队列，在consume中判断其能否被消费
+		//1s产生20个产生一个请求,直接加入队列，在consume中判断其能否被消费
 		service.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
@@ -40,12 +40,15 @@ public class BaseLimiter implements Limiter {
 				try {
 					if (requestQueue.size() < blockQueueSize) {
 						requestQueue.offer(sequence);
+						System.out.println("request "+ sequence +" enter queue");
+					}else {
+						System.out.println("request "+ sequence +" is drop");
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-		}, 10L, 10L, TimeUnit.MILLISECONDS);
+		}, 50L, 50L, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -86,14 +89,38 @@ public class BaseLimiter implements Limiter {
 
 
 	public void testLimiter() {
-		requestGen();
 		produce();
 		consume();
+		requestGen();
 	}
 
 	@Override
 	public void printConsumeInfo(Long requestSequence) {
 		System.out.println("request " + requestSequence + " enter system," +
 				"rest " + requestQueue.size() + " request");
+	}
+
+	@Override
+	public void addRequest(final Long requestNum) {
+		service.scheduleWithFixedDelay(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("flood peek is coming");
+				for(long i=0;i< requestNum;i++){
+					if(requestQueue.size()<blockQueueSize){
+						requestQueue.offer(-i);
+					}else {
+						System.out.println("request "+ -i +" is drop");
+					}
+				}
+			}
+		},1000L,1000L,TimeUnit.MILLISECONDS);
+
+
+	}
+
+	@Override
+	public void addResource(int resourceNum) {
+		semaphore.release(resourceNum);
 	}
 }
