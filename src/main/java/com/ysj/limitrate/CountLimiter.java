@@ -55,8 +55,8 @@ public class CountLimiter extends BaseLimiter{
                 while (true){
                     try {
                         if(requestQueue.size()>0) {
+                            Long curRequestSequence = requestQueue.poll();
                             if (semaphore.tryAcquire()) {
-                                Long curRequestSequence = requestQueue.poll();
                                 System.out.println("request " + curRequestSequence + " enter system," +
                                         "rest " + requestQueue.size() + " request");
                             }
