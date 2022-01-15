@@ -1,8 +1,8 @@
 package com.ysj.limitrate;
 
 public interface Limiter {
-     boolean tryEnter();
-     void release();
+     void produce();
+     void consume();
      void testLimiter();
 }
  
