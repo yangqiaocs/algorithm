@@ -12,13 +12,32 @@ public class CountLimiter extends BaseLimiter{
     }
 
     @Override
-    public void release(){
+    public void consume(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true){
+                    sequence++;
+                    try {
+                        if(semaphore.tryAcquire()){
+                            System.out.println("request"+ sequence + " enter system");
+                        }
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+    }
+
+    @Override
+    public void produce(){
         ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
         service.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 try {
-                    semaphore.release(3);
+                    semaphore.release(rate);
                     System.out.println("complete release 3");
                 }catch (Exception e){
                     e.printStackTrace();
