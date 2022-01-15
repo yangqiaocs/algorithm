@@ -1,8 +1,5 @@
 package com.ysj.limitrate;
 
-import java.util.concurrent.TimeUnit;
-
-
 public class CountLimiter extends BaseLimiter {
 
 	CountLimiter(int produceRate, int consumeRate, Long blockQueueSize) {
@@ -17,6 +14,7 @@ public class CountLimiter extends BaseLimiter {
 			printConsumeInfo(curRequestSequence);
 		}
 	}
+
 
 	public static void main(String[] args) {
 		Limiter limiter = new CountLimiter(3,10, Long.MAX_VALUE);

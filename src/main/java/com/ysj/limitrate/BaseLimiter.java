@@ -69,6 +69,18 @@ public class BaseLimiter implements Limiter {
 
 	@Override
 	public void consume() {
+		service.scheduleAtFixedRate(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					if (requestQueue.size() > 0) {
+						myConsume();
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}, 1L, 1L, TimeUnit.MICROSECONDS);
 	}
 
 	@Override

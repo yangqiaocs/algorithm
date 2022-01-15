@@ -10,22 +10,6 @@ public class TokenBucket extends BaseLimiter {
 	}
 
 	@Override
-	public void consume() {
-		service.scheduleAtFixedRate(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					if (requestQueue.size() > 0) {
-						myConsume();
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}, 1L, 1L, TimeUnit.MICROSECONDS);
-	}
-
-	@Override
 	public void myConsume(){
 		//有令牌，才消耗
 		if (semaphore.tryAcquire()) {
