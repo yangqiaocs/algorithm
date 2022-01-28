@@ -8,12 +8,12 @@ public class Server {
 	private Message message;
 	private long version = 1L;
 	private Map<String,Server> routes = new ConcurrentHashMap<>();
-	private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
 
 	public Server(String ip, Message message) {
 		this.Ip = ip;
 		this.message = message;
+		ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 		service.scheduleAtFixedRate(()->{
 			if(this.message.getVersion()!=this.version){
 				System.out.println(this.message.getVersion()+" "+this.version);
